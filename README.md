@@ -1,3 +1,3 @@
 doggyRush
 =========
-This is base on an Eclipse Project
+This is based on an Eclipse Project
