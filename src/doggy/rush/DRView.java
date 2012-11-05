@@ -40,6 +40,7 @@ public class DRView extends SurfaceView{
 	public DRView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		
+		prepareItems();
 
 		holder= getHolder();
 		holder.addCallback(new SurfaceHolder.Callback(){
@@ -53,8 +54,8 @@ public class DRView extends SurfaceView{
 			public void surfaceCreated(SurfaceHolder holder){
 				thread=createThread();
 				thread.setRunning(true);
-				prepareItems();
-				if (state==State.START){
+				Log.d("DoggyRush", "surfaceCreated");
+				if (state==State.START || state==State.PAUSE){
 					state=State.PAUSE;
 				}else{
 					resetStatus();
@@ -123,6 +124,12 @@ public class DRView extends SurfaceView{
 		dogOnLane=1;
 		score = 0;
 		redScreenAlpha = 0;
+	}
+	private void resetCanvasSize(Canvas canvas){
+		height = (int) Math.round(getHeight());
+		heightCenter=height/2;
+		width = (int) Math.round(getWidth());
+		widthCenter=width/2;
 	}
 	public boolean back(){
 		
@@ -198,11 +205,8 @@ public class DRView extends SurfaceView{
 		if (canvas==null) return;
 		
 		if (init==false){
-			height = (int) Math.round(getHeight());
-			heightCenter=height/2;
-			width = (int) Math.round(getWidth());
-			widthCenter=width/2;
-			resetStatus();
+			resetCanvasSize(canvas);
+			dog.setCurrentPosition(scale(-250), heightCenter);
 			init=true;
 		}
 		canvas.drawColor(Color.BLACK);
