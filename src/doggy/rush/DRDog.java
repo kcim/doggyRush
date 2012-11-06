@@ -7,11 +7,12 @@ import android.graphics.Rect;
 
 public class DRDog {
 
-	private static final int POWER_TOTAL = 200;
-	private static final int FIRE_CONSUME_POWER = 25;
+	private static final int POWER_TOTAL = 400;
+	private static final int FIRE_CONSUME_POWER = 40;
 	private static final int FIRE_TOTAL_TIME = 20;
 	private static final int REST_TOTAL_TIME = 50;
 	private static final int DOG_SPEED = 25;
+	public static final int DOG_NUM = 3;
 	
 	private DRSprite dogs[]=new DRSprite[3], fire;
 	private double targetX, targetY, currentX, currentY;
@@ -24,11 +25,17 @@ public class DRDog {
 		dogs[1] = new DRSprite(BitmapFactory.decodeResource(resources, R.drawable.dog2, options),8);
 		dogs[2] = new DRSprite(BitmapFactory.decodeResource(resources, R.drawable.dog3, options),8);
 		fire = new DRSprite(BitmapFactory.decodeResource(resources, R.drawable.fire, options),2);
-		revive();
+		reset();
 		scale = options.inTargetDensity/options.inDensity;
 	}
-	
-	public void drawDogs(Canvas canvas){
+	public void reset(){
+		power = POWER_TOTAL;
+		fireRemaining = 0;
+		restRemaining = 0;
+		dogsRemaining = 3;
+	}
+
+	public void draw(Canvas canvas){
 		
 		this.updateStatus();
 		int alpha = restRemaining>0 ? 150 : 255;
@@ -62,8 +69,8 @@ public class DRDog {
 		double xDiff=currentX - targetX;
 		currentX = (xDiff > DOG_SPEED/2) ? currentX-scale*DOG_SPEED : (xDiff < DOG_SPEED/-2) ? currentX+scale*DOG_SPEED : targetX;
 		
-		fireRemaining = fireRemaining-1 < 0 ? 0 : fireRemaining-1;
-		restRemaining = restRemaining-1 < 0 ? 0 : restRemaining-1;
+		if (fireRemaining > 0) fireRemaining--;
+		if (restRemaining > 0) restRemaining--;
 		power = power+1>=POWER_TOTAL ? POWER_TOTAL : power+1;
 		
 	}
@@ -90,7 +97,7 @@ public class DRDog {
 	}
 
 	public void setOnFire(){
-		if (power>=FIRE_CONSUME_POWER) fireRemaining = FIRE_TOTAL_TIME;
+		if (power>=FIRE_CONSUME_POWER && fireRemaining<FIRE_TOTAL_TIME) fireRemaining = FIRE_TOTAL_TIME;
 		power = power-FIRE_CONSUME_POWER <= 0 ? 0 : power-FIRE_CONSUME_POWER;
 	}
 	public double getPowerRatio(){
@@ -104,10 +111,17 @@ public class DRDog {
 		return --dogsRemaining;
 	}
 	public void revive(){
-		power = POWER_TOTAL;
-		fireRemaining = 0;
-		restRemaining = 0;
-		dogsRemaining = 3;
+		if (dogsRemaining<DOG_NUM){
+			dogsRemaining++;
+		}
+		fireRemaining=100;
 	}
-
+	public void fillPower(){
+		fireRemaining=100;
+		power = POWER_TOTAL;
+	}
+	public int getDogsRemaining(){
+		return dogsRemaining;
+	}
+	
 }

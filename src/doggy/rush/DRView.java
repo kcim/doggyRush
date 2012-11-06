@@ -18,14 +18,16 @@ public class DRView extends SurfaceView{
 	
 	private static final int VIEW_DESIGNED_HEIGHT = 480;
 	private static final int SCORE_SCALE = 5;
+	
 	private SurfaceHolder holder;
 	private DRDog dog;
 	private DRRoad road;
+	private DRBone bone;
 	private int dogOnLane;
 	private DRSprite title, start, restart, fireBtn, win, lose, resume, one, two, three, paused, hint1, hint2, distance, highest;	
 	private DRThread thread;
 	private Paint powerBarPaint, scoreTextPaint;
-	private int redScreenAlpha;
+	private int redScreenAlpha, whiteScreenAlpha;
     private int width, height, count = -1;
     private Boolean init=false;
     private double widthCenter, heightCenter;
@@ -85,7 +87,8 @@ public class DRView extends SurfaceView{
 		
 		dog = new DRDog(res, options);
 		road = new DRRoad(res, options);
-		
+		bone = new DRBone(res, options, R.drawable.bone, 12);
+
 		powerBarPaint = new Paint(); 
 		powerBarPaint.setShader(new LinearGradient(0, 0, 0, (int)scale(380), Color.YELLOW, Color.RED, TileMode.CLAMP)); 
 		
@@ -116,9 +119,9 @@ public class DRView extends SurfaceView{
 	}
 	private void resetStatus(){
 		
-		road.resetCars();
-		road.setCarExists(false);
-		dog.revive();
+		road.reset();
+		dog.reset();
+		bone.reset();
 		dog.setCurrentPosition(scale(-250), heightCenter);
 		count = 90;
 		dogOnLane=1;
@@ -168,6 +171,17 @@ public class DRView extends SurfaceView{
 			case START:
 				if(fireBtn.isCoveringPoint(x, y)){
 					dog.setOnFire();
+					return -1;
+				}
+				if (bone.isTouched(x, y)){
+					bone.reset();
+					if (dog.getPowerRatio() < 0.95d){
+						dog.fillPower();
+					}else{
+						dog.revive();
+						whiteScreenAlpha=255;
+					}
+					return -1;
 				}
 			break;
 			
@@ -216,19 +230,19 @@ public class DRView extends SurfaceView{
 					
 				dog.setTargetX(-10);
 				dog.setTargetY(heightCenter);
-				dog.drawDogs(canvas);
+				dog.draw(canvas);
 				
 				title.drawObject(canvas, width/3, height/3);
 				start.drawObject(canvas, width/1.8, height/1.5);
 				highest.drawObject(canvas, scale(20), height-highest.getHeight());
-				Log.d("DoggyRush", "OldScore: "+oldScore/SCORE_SCALE+"m");
+
 				canvas.drawText(oldScore/SCORE_SCALE+"m", (float)scale(20)+highest.getWidth(), height-highest.getHeight()+(float)scale(7), scoreTextPaint);
 				
 			break;
 			
 			case COUNT:
 				road.draw(canvas);
-				dog.drawDogs(canvas);
+				dog.draw(canvas);
 				
 				if (count==0){
 					state=State.START;
@@ -249,10 +263,11 @@ public class DRView extends SurfaceView{
 			break;
 			
 			case START:
-				road.setCarExists(true);
+				road.carOn();
 				road.draw(canvas);
 				road.setSpeedByScore(score);
-				dog.drawDogs(canvas);
+				dog.draw(canvas);
+				bone.draw(canvas);
 				
 				fireBtn.drawObject(canvas, width-fireBtn.getWidth()-scale(10), height-fireBtn.getHeight());
 				distance.drawObject(canvas, scale(20), distance.getHeight());
@@ -262,7 +277,11 @@ public class DRView extends SurfaceView{
 					canvas.drawARGB(redScreenAlpha, 255, 0, 0);
 					redScreenAlpha-=5;
 				}
-				if (road.killDog(dog) && dog.canKill()){	
+				if (whiteScreenAlpha-->0) {
+					canvas.drawARGB(whiteScreenAlpha, 255, 255, 255);
+					whiteScreenAlpha-=10;
+				}
+				if (road.carHitDog(dog) && dog.canKill()){	
 					redScreenAlpha = 100;
 					if (dog.kill()==0) state = State.LOSE; 
 				}		
@@ -272,7 +291,7 @@ public class DRView extends SurfaceView{
 			case WIN:				
 				road.draw(canvas);
 				dog.setTargetX(1000);
-				dog.drawDogs(canvas);
+				dog.draw(canvas);
 				
 				win.drawObjectCentered(canvas,widthCenter, height/3);
 				restart.drawObjectCentered(canvas,  widthCenter, height/1.5);

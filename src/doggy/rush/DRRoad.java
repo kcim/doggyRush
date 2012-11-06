@@ -12,12 +12,14 @@ public class DRRoad {
 	private static final int SPEED_CONSTANT = 10;
 	private static final int MAX_SPEED = 80;
 	private static final int CARS_NUM = 3;
+	private static final int CARS_COOLDOWN_MAX = 150;
 	
 	private DRSprite carSprites[]=new DRSprite[CARS_NUM];
 	private DRSprite roadSprite;
 	private ArrayList<Integer> occupiedLane;
 	private double currentX[] = new double[CARS_NUM];
 	private double currentY[] = new double[CARS_NUM];
+	private int coolDown[] = new int[CARS_NUM];
 	private int speed;
 	private double scale;
 	private boolean carExists;
@@ -28,13 +30,14 @@ public class DRRoad {
 			carSprites[i] = new DRSprite(BitmapFactory.decodeResource(resources, R.drawable.truck, options),2);
 		}
 		roadSprite = new DRSprite(BitmapFactory.decodeResource(resources, R.drawable.road, options),10);
-		setCarExists(false);
-		resetCars();
+		reset();
 		scale = options.inTargetDensity/options.inDensity;
 	}
-	public void resetCars(){
+	public void reset(){
+		carExists=false;
 		for (int i=0; i<CARS_NUM; i++){
 			currentX[i] = -1000;
+			coolDown[i] = (int)(Math.random()*CARS_COOLDOWN_MAX);
 		}
 		occupiedLane = new ArrayList<Integer>(Arrays.asList( -1, -1, -1 ));
 	}
@@ -50,22 +53,29 @@ public class DRRoad {
 	}
 	public void draw(Canvas canvas){
 		
-		int canvasWidth=canvas.getWidth();
 		roadSprite.drawRoad(canvas);
+		if (!carExists) return;
 		
-		for (int i=0; i<CARS_NUM && carExists; i++){
-			
-			if (currentX[i] <= -1*(carSprites[i].getWidth())){//car moved away
-				if (occupiedLane.contains(i)){//lane has car
+		int canvasWidth=canvas.getWidth();
+		for (int i=0; i<CARS_NUM; i++){
+					
+			if (currentX[i] <= -1*carSprites[i].getWidth()){//car moved away
+				if (occupiedLane.contains(i)){//check lane has car
 					occupiedLane.set(occupiedLane.indexOf(i), -1);//remove car from lane
-				}else{//lane does not has car
+					
+				}else if (coolDown[i] == 0){//lane does not has car and cooldown finishes
+					
 					int laneIndex=(int)Math.round(Math.random()*2);//pick a lane
 					if (occupiedLane.get(laneIndex) == -1){//lane has no car
 						
 						occupiedLane.set(laneIndex,i);//register lane
-						currentX[i]= canvasWidth+Math.random()*canvasWidth*2.5 ;//init x
+						currentX[i]= canvasWidth;//init x
 						currentY[i]=canvas.getHeight()*((double)(laneIndex*2+1)/6);//init y
+						coolDown[i] = (int)(Math.random()*CARS_COOLDOWN_MAX);
 					}
+					
+				}else{//no car on any lanes, but coolDown not finished
+					coolDown[i]--;
 				}
 			}else{// car still here
 				currentX[i]-=(int)(speed+Math.random()*speed);
@@ -75,15 +85,15 @@ public class DRRoad {
 		}
 		
 	}
-	public boolean killDog(DRDog dog){
+	public boolean carHitDog(DRDog dog){
 		
 		for (int i=0; i<CARS_NUM; i++){
 			if (dog.hitsObject(carSprites[i].getFrameRect())) return true;
 		}
 		return false;
 	}
-	public void setCarExists(boolean value){
-		carExists = value;
+	public void carOn(){
+		carExists = true;
 	}
 	public void setSpeedByScore(int score){
 		double factor = scale*SPEED_CONSTANT+((double)score*SPEED_CONSTANT/5000);
