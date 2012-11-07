@@ -114,10 +114,10 @@ public class DRDog {
 		if (dogsRemaining<DOG_NUM){
 			dogsRemaining++;
 		}
-		fireRemaining=100;
+		fireRemaining=150;
 	}
 	public void fillPower(){
-		fireRemaining=100;
+		fireRemaining=150;
 		power = POWER_TOTAL;
 	}
 	public int getDogsRemaining(){

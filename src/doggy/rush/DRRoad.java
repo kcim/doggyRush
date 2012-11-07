@@ -2,7 +2,6 @@ package doggy.rush;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-
 import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -63,7 +62,7 @@ public class DRRoad {
 				if (occupiedLane.contains(i)){//check lane has car
 					occupiedLane.set(occupiedLane.indexOf(i), -1);//remove car from lane
 					
-				}else if (coolDown[i] == 0){//lane does not has car and cooldown finishes
+				}else if (coolDown[i] <= 0){//lane does not has car and cooldown finishes
 					
 					int laneIndex=(int)Math.round(Math.random()*2);//pick a lane
 					if (occupiedLane.get(laneIndex) == -1){//lane has no car

@@ -7,10 +7,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
-import android.graphics.Shader;
 import android.graphics.Shader.TileMode;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -56,7 +54,6 @@ public class DRView extends SurfaceView{
 			public void surfaceCreated(SurfaceHolder holder){
 				thread=createThread();
 				thread.setRunning(true);
-				Log.d("DoggyRush", "surfaceCreated");
 				if (state==State.START || state==State.PAUSE){
 					state=State.PAUSE;
 				}else{
@@ -283,7 +280,9 @@ public class DRView extends SurfaceView{
 				}
 				if (road.carHitDog(dog) && dog.canKill()){	
 					redScreenAlpha = 100;
-					if (dog.kill()==0) state = State.LOSE; 
+					int dogLeft = dog.kill();
+					if (dogLeft == 1) bone.reduceCoolDown();
+					if (dogLeft == 0) state = State.LOSE; 
 				}		
 
 			break;
