@@ -8,8 +8,8 @@ import android.util.Log;
 public class DRBone{
 	
 	private static final int FOOD_SPEED = 15;
-	private static final int COOLDOWN_MAX = 400;
-	private static final int COOLDOWN_MIN = 100;
+	private static final int COOLDOWN_MAX = 700;
+	private static final int COOLDOWN_MIN = 300;
 	
 	private DRSprite foodSprite;
 	private double currentX, currentY;
